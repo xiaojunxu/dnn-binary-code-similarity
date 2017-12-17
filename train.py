@@ -21,7 +21,6 @@ parser.add_argument('--batch_size', type=int, default=5, help='batch size')
 parser.add_argument('--load_path', type=str, default=None, help='path for model loading, "#LATEST#" for restoring from the latest checkpoint')
 parser.add_argument('--save_path', type=str, default='./saved_model/graphnn-model', help='path for model saving')
 parser.add_argument('--log_path', type=str, default=None, help='path for training log')
-parser.add_argument('--add_data_time', type=int, default=0, help='how many added data will be included into training')
 
 
 
@@ -46,7 +45,6 @@ if __name__ == '__main__':
     LOAD_PATH = args.load_path
     SAVE_PATH = args.save_path
     LOG_PATH = args.log_path
-    ADD_TIME = args.add_data_time
 
     SHOW_FREQ = 1
     SAVE_FREQ = MAX_EPOCH
@@ -69,15 +67,6 @@ if __name__ == '__main__':
     Gs_train, classes_train = Gs, classes
 
     print "Train: {} graphs, {} functions".format(len(Gs_train), len(classes_train))
-
-
-    #Deal with the added data for retraining
-    add_pairs = []
-    for i in range(1, ADD_TIME+1):
-        new_pairs = read_added_pair('./added_data/added_data{}'.format(i), NODE_FEATURE_DIM)
-        add_pairs += new_pairs
-
-    print "Added data: {} pairs".format(len(add_pairs))
 
     ##  Processing input end  ##
 
