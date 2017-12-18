@@ -7,7 +7,7 @@ from graphnnSiamese import graphnn
 from exp_utils import *
 import os
 import argparse
-import cPickle as pickle
+import json
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--device', type=str, default='0,1,2,3,4,5,6,7', help='visible gpu device')
@@ -68,25 +68,52 @@ if __name__ == '__main__':
 
 
     #Gs_train, classes_train, Gs_dev, classes_dev, Gs_test, classes_test = partition_data(Gs, classes, [0.8,0.1,0.1], np.load("class_perm.npy"))
+    if os.path.isfile('class_perm.npy'):
+        perm = np.load('class_perm.npy')
+    else:
+        perm = np.random.permutation(len(classes))
+        np.save('class_perm.npy', perm)
+    if len(perm) < len(classes):
+        perm = np.random.permutation(len(classes))
+        np.save('class_perm.npy', perm)
+
     Gs_train, classes_train, Gs_dev, classes_dev, Gs_test, classes_test = partition_data(Gs, classes, [0.05,0.05,0.9], np.load("class_perm.npy"))
 
     print "Train: {} graphs, {} functions".format(len(Gs_train), len(classes_train))
     print "Dev: {} graphs, {} functions".format(len(Gs_dev), len(classes_dev))
-    print "Test2: {} graphs, {} functions".format(len(Gs_test), len(classes_test))
+    print "Test: {} graphs, {} functions".format(len(Gs_test), len(classes_test))
 
     #Processing the pairs for validation and testing
-    try:
-        valid_ids = pickle.load(open('valid.ids'))
+    if os.path.isfile('valid.json'):
+        with open('valid.json') as inf:
+            valid_ids = json.load(inf)
         valid_epoch = generate_epoch_pair(Gs_dev, classes_dev, BATCH_SIZE, load_id=valid_ids)
-    except:
+    else:
         valid_epoch, valid_ids = generate_epoch_pair(Gs_dev, classes_dev, BATCH_SIZE, output_id=True)
-        pickle.dump(valid_ids, open('valid.ids', 'w'))
-    try:
-        test_ids = pickle.load(open('test.ids'))
-        test_epoch = generate_epoch_pair(Gs_test, classes_test, BATCH_SIZE, load_id=test_ids)
-    except:
-        test_epoch, test_ids = generate_epoch_pair(Gs_test, classes_test, BATCH_SIZE, output_id=True)
-        pickle.dump(test_ids, open('test.ids', 'w'))
+        with open('valid.json', 'w') as outf:
+            json.dump(valid_ids, outf)
+    if os.path.isfile('test.json'):
+        with open('test.json') as inf:
+            test_ids = json.load(inf)
+        test_epoch = generate_epoch_pair(Gs_dev, classes_dev, BATCH_SIZE, load_id=test_ids)
+    else:
+        test_epoch, test_ids = generate_epoch_pair(Gs_dev, classes_dev, BATCH_SIZE, output_id=True)
+        with open('test.json', 'w') as outf:
+            json.dump(test_ids, outf)
+    assert 0
+    #try:
+    #    valid_ids = pickle.load(open('valid.ids'))
+    #    valid_epoch = generate_epoch_pair(Gs_dev, classes_dev, BATCH_SIZE, load_id=valid_ids)
+    #except:
+    #    valid_epoch, valid_ids = generate_epoch_pair(Gs_dev, classes_dev, BATCH_SIZE, output_id=True)
+    #    pickle.dump(valid_ids, open('valid.ids', 'w'))
+
+    #try:
+    #    test_ids = pickle.load(open('test.ids'))
+    #    test_epoch = generate_epoch_pair(Gs_test, classes_test, BATCH_SIZE, load_id=test_ids)
+    #except:
+    #    test_epoch, test_ids = generate_epoch_pair(Gs_test, classes_test, BATCH_SIZE, output_id=True)
+    #    pickle.dump(test_ids, open('test.ids', 'w'))
 
 
     ##  Processing input end  ##
