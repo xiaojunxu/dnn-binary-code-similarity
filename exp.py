@@ -10,7 +10,7 @@ import argparse
 import json
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--device', type=str, default='0,1,2,3,4,5,6,7', help='visible gpu device')
+parser.add_argument('--device', type=str, default='0', help='visible gpu device')
 parser.add_argument('--fea_dim', type=int, default=7, help='feature dimension')
 parser.add_argument('--embed_dim', type=int, default=64, help='embedding dimension')
 parser.add_argument('--embed_depth', type=int, default=2, help='embedding network depth')
@@ -100,20 +100,6 @@ if __name__ == '__main__':
         test_epoch, test_ids = generate_epoch_pair(Gs_dev, classes_dev, BATCH_SIZE, output_id=True)
         with open('test.json', 'w') as outf:
             json.dump(test_ids, outf)
-    assert 0
-    #try:
-    #    valid_ids = pickle.load(open('valid.ids'))
-    #    valid_epoch = generate_epoch_pair(Gs_dev, classes_dev, BATCH_SIZE, load_id=valid_ids)
-    #except:
-    #    valid_epoch, valid_ids = generate_epoch_pair(Gs_dev, classes_dev, BATCH_SIZE, output_id=True)
-    #    pickle.dump(valid_ids, open('valid.ids', 'w'))
-
-    #try:
-    #    test_ids = pickle.load(open('test.ids'))
-    #    test_epoch = generate_epoch_pair(Gs_test, classes_test, BATCH_SIZE, load_id=test_ids)
-    #except:
-    #    test_epoch, test_ids = generate_epoch_pair(Gs_test, classes_test, BATCH_SIZE, output_id=True)
-    #    pickle.dump(test_ids, open('test.ids', 'w'))
 
 
     ##  Processing input end  ##

@@ -2,7 +2,7 @@ import numpy as np
 #import matplotlib.pyplot as plt
 from sklearn.metrics import auc, roc_curve
 from graphnnSiamese import graphnn
-import cPickle as pickle
+import json
 
 def get_f_name(DATA, SF, CM, OP, VS):
     F_NAME = []
@@ -10,7 +10,8 @@ def get_f_name(DATA, SF, CM, OP, VS):
         for cm in CM:
             for op in OP:
                 for vs in VS:
-                    F_NAME.append(DATA+sf+cm+op+vs+".txt")
+                    #F_NAME.append(DATA+sf+cm+op+vs+".txt")
+                    F_NAME.append(DATA+sf+cm+op+vs+".json")
     return F_NAME
 
 
@@ -18,15 +19,21 @@ def get_f_dict(F_NAME):
     name_num = 0
     name_dict = {}
     for f_name in F_NAME:
-        cur_f = open(f_name, "r")
-        for line in cur_f:
-            info = line.strip().split(' ')
-            if (len(info) == 2):
-                if (len(info[1].split('||')) > 1):
-                    info[1] = info[1].split('||')[0]
-                if (info[1] not in name_dict):
-                    name_dict[info[1]] = name_num
+        with open(f_name) as inf:
+            for line in inf:
+                g_info = json.loads(line.strip())
+                if (g_info['fname'] not in name_dict):
+                    name_dict[g_info['fname']] = name_num
                     name_num += 1
+        #cur_f = open(f_name, "r")
+        #for line in cur_f:
+        #    info = line.strip().split(' ')
+        #    if (len(info) == 2):
+        #        if (len(info[1].split('||')) > 1):
+        #            info[1] = info[1].split('||')[0]
+        #        if (info[1] not in name_dict):
+        #            name_dict[info[1]] = name_num
+        #            name_num += 1
     return name_num, name_dict
 
 class graph(object):
@@ -73,35 +80,45 @@ def read_graph(F_NAME, FUNC_NAME_DICT, FEATURE_DIM):
             classes.append([])
 
     for f_name in F_NAME:
-        cur_f = open(f_name, "r")
-        g_num = int(cur_f.readline())
-        for g_id in range(g_num):
-            ## Read in a single graph.
-            info = cur_f.readline().strip().split(' ')
-            n_num = int(info[0])
-            if FUNC_NAME_DICT != None:
-                fname = info[1]
-                if (len(fname.split('||')) > 1):
-                    fname = fname.split('||')[0]
-                label = FUNC_NAME_DICT[fname]
-                classes[label].append( len(graphs) )    ## Record which graphs that each class contains.
-            else:
-                label = info[1]
-            cur_graph = graph(n_num, label, info[1])
-            for u in range(n_num):
-                info = cur_f.readline().strip().split(' ')
-                cur_graph.features[u] = np.array(map(float, info[:FEATURE_DIM]))
-                succ_num = int(info[FEATURE_DIM])
-                for strv in info[FEATURE_DIM+1:]:
-                    cur_graph.add_edge(u, int(strv))
-                
-            graphs.append(cur_graph)
+        with open(f_name) as inf:
+            for line in inf:
+                g_info = json.loads(line.strip())
+                label = FUNC_NAME_DICT[g_info['fname']]
+                classes[label].append(len(graphs))
+
+                cur_graph = graph(g_info['n_num'], label, g_info['src'])
+                for u in range(g_info['n_num']):
+                    cur_graph.features[u] = np.array(g_info['features'][u])
+                    for v in g_info['succs'][u]:
+                        cur_graph.add_edge(u, v)
+
+                graphs.append(cur_graph)
+        #cur_f = open(f_name, "r")
+        #g_num = int(cur_f.readline())
+        #for g_id in range(g_num):
+        #    ## Read in a single graph.
+        #    info = cur_f.readline().strip().split(' ')
+        #    n_num = int(info[0])
+        #    if FUNC_NAME_DICT != None:
+        #        fname = info[1]
+        #        if (len(fname.split('||')) > 1):
+        #            fname = fname.split('||')[0]
+        #        label = FUNC_NAME_DICT[fname]
+        #        classes[label].append( len(graphs) )    ## Record which graphs that each class contains.
+        #    else:
+        #        label = info[1]
+        #    cur_graph = graph(n_num, label, info[1])
+        #    for u in range(n_num):
+        #        info = cur_f.readline().strip().split(' ')
+        #        cur_graph.features[u] = np.array(map(float, info[:FEATURE_DIM]))
+        #        succ_num = int(info[FEATURE_DIM])
+        #        for strv in info[FEATURE_DIM+1:]:
+        #            cur_graph.add_edge(u, int(strv))
+        #        
+        #    graphs.append(cur_graph)
             
 
-    if FUNC_NAME_DICT != None:
-        return graphs, classes
-    else:
-        return graphs
+    return graphs, classes
 
 def read_added_pair(fname, fea_dim):
     #Read graphs
