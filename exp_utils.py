@@ -10,7 +10,6 @@ def get_f_name(DATA, SF, CM, OP, VS):
         for cm in CM:
             for op in OP:
                 for vs in VS:
-                    #F_NAME.append(DATA+sf+cm+op+vs+".txt")
                     F_NAME.append(DATA+sf+cm+op+vs+".json")
     return F_NAME
 
@@ -25,15 +24,6 @@ def get_f_dict(F_NAME):
                 if (g_info['fname'] not in name_dict):
                     name_dict[g_info['fname']] = name_num
                     name_num += 1
-        #cur_f = open(f_name, "r")
-        #for line in cur_f:
-        #    info = line.strip().split(' ')
-        #    if (len(info) == 2):
-        #        if (len(info[1].split('||')) > 1):
-        #            info[1] = info[1].split('||')[0]
-        #        if (info[1] not in name_dict):
-        #            name_dict[info[1]] = name_num
-        #            name_num += 1
     return name_num, name_dict
 
 class graph(object):
@@ -60,7 +50,7 @@ class graph(object):
         self.succs[u].append(v)
         self.preds[v].append(u)
 
-    def toString(self):
+    def toString(self):  # For debug
         ret = '{} {}\n'.format(self.node_num, self.label)
         for u in range(self.node_num):
             for fea in self.features[u]:
@@ -93,62 +83,9 @@ def read_graph(F_NAME, FUNC_NAME_DICT, FEATURE_DIM):
                         cur_graph.add_edge(u, v)
 
                 graphs.append(cur_graph)
-        #cur_f = open(f_name, "r")
-        #g_num = int(cur_f.readline())
-        #for g_id in range(g_num):
-        #    ## Read in a single graph.
-        #    info = cur_f.readline().strip().split(' ')
-        #    n_num = int(info[0])
-        #    if FUNC_NAME_DICT != None:
-        #        fname = info[1]
-        #        if (len(fname.split('||')) > 1):
-        #            fname = fname.split('||')[0]
-        #        label = FUNC_NAME_DICT[fname]
-        #        classes[label].append( len(graphs) )    ## Record which graphs that each class contains.
-        #    else:
-        #        label = info[1]
-        #    cur_graph = graph(n_num, label, info[1])
-        #    for u in range(n_num):
-        #        info = cur_f.readline().strip().split(' ')
-        #        cur_graph.features[u] = np.array(map(float, info[:FEATURE_DIM]))
-        #        succ_num = int(info[FEATURE_DIM])
-        #        for strv in info[FEATURE_DIM+1:]:
-        #            cur_graph.add_edge(u, int(strv))
-        #        
-        #    graphs.append(cur_graph)
             
 
     return graphs, classes
-
-def read_added_pair(fname, fea_dim):
-    #Read graphs
-    Gs = read_graph([fname+'.graph'], None, fea_dim)
-
-    #Generate pairs
-    id_file = open(fname+'.id', 'r')
-    added_pair_data = []   #[(X1, X2, m1, m2, y)]
-    for line in id_file:
-        i1, i2, label = map(int, line.strip().split(' '))
-
-        g1 = Gs[i1]
-        X1 = np.zeros((1, g1.node_num, fea_dim))
-        m1 = np.zeros((1, g1.node_num, g1.node_num))
-        for u in range(g1.node_num):
-            X1[0, u, :] = np.array( g1.features[u] )
-            for v in g1.succs[u]:
-                m1[0, u, v] = 1
-
-        g2 = Gs[i2]
-        X2 = np.zeros((1, g2.node_num, fea_dim))
-        m2 = np.zeros((1, g2.node_num, g2.node_num))
-        for u in range(g2.node_num):
-            X2[0, u, :] = np.array( g2.features[u] )
-            for v in g2.succs[u]:
-                m2[0, u, v] = 1
-
-        added_pair_data.append([X1, X2, m1, m2, [label]])
-
-    return added_pair_data
 
 
 def partition_data(Gs, classes, partitions, perm):
@@ -176,7 +113,7 @@ def partition_data(Gs, classes, partitions, perm):
 
 def generate_epoch_pair(Gs, classes, M, output_id = False, load_id = None):
     epoch_data = []
-    id_data = []   # [ ( [(G0,G1),(G0,G1)] , [(G0,H0),(G0,H0)] ) , ... ]
+    id_data = []   # [ ( [(G0,G1),(G0,G1), ...] , [(G0,H0),(G0,H0), ...] ) , ... ]
 
     if load_id is None:
         st = 0
@@ -344,24 +281,7 @@ def get_auc_epoch(model, graphs, classes, batch_size, load_data=None):
     diff = np.array(tot_diff)
     truth = np.array(tot_truth)
 
-    fpr, tpr, thres = roc_curve(np.array(truth), (1-np.array(diff))/2)
+    fpr, tpr, thres = roc_curve(truth, (1-diff)/2)
     model_auc = auc(fpr, tpr)
 
     return model_auc, fpr, tpr, thres
-
-
-def show_stat(Gs):
-    i586 = 0
-    arm = 0
-    mips = 0
-    for g in Gs:
-        if '-i586-linux-O' in g.name:
-            i586 += 1
-        elif '-armeb-linux-O' in g.name:
-            arm += 1
-        elif 'mips-linux-O' in g.name:
-            mips += 1
-
-    print 'x86:{}'.format(i586)
-    print 'arm:{}'.format(arm)
-    print 'mips:{}'.format(mips)

@@ -140,7 +140,7 @@ class graphnn(object):
     def train(self, X1, X2, mask1, mask2, y):
         self.sess.run(self.optimizer, feed_dict = {self.X1:X1, self.X2:X2, self.msg1_mask:mask1, self.msg2_mask:mask2, self.label:y})
     
-    def save(self, path, epoch):
+    def save(self, path, epoch=None):
         checkpoint_path = self.saver.save(self.sess, path, global_step=epoch)
         return checkpoint_path
     

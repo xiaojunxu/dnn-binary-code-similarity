@@ -139,6 +139,11 @@ if __name__ == '__main__':
             auc, fpr, tpr, thres = get_auc_epoch(gnn, Gs_dev, classes_dev, BATCH_SIZE, load_data=valid_epoch)
             gnn.say( "Testing model: validation auc = {0} @ {1}".format(auc, datetime.now()) )
 
+            if auc > best_auc:
+                path = gnn.save(SAVE_PATH+'_best')
+                best_auc = auc
+                gnn.say("Model saved in {}".format(path))
+
         if (i % SAVE_FREQ == 0):
             path = gnn.save(SAVE_PATH, i)
             gnn.say("Model saved in {}".format(path))
