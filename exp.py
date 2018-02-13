@@ -4,7 +4,7 @@ print tf.__version__
 import numpy as np
 from datetime import datetime
 from graphnnSiamese import graphnn
-from exp_utils import *
+from utils import *
 import os
 import argparse
 import json
