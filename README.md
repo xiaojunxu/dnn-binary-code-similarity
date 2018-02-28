@@ -2,12 +2,12 @@
 This repo provides an implementation of the Gemini network for binary code similarity detection in [this paper](https://arxiv.org/abs/1708.06525).
 
 ## Prepration and Data
-Unzip the data by running
+Unzip the data by running:
 ```bash
 unzip data.zip
 ```
 
-The network is based on Tensorflow 1.4 in Python 2.7. You can install the dependency by running
+The network is based on Tensorflow 1.4 in Python 2.7. You can install the dependency by running:
 ```bash
 pip install -r requirements.txt
 ```
