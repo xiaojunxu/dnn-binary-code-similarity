@@ -129,7 +129,7 @@ if __name__ == '__main__':
             N_embed = EMBED_DIM,
             depth_embed = EMBED_DEPTH,
             N_o = OUTPUT_DIM,
-            ITERATION_LEVEL = ITERATION_LEVEL,
+            ITER_LEVEL = ITERATION_LEVEL,
             lr = LEARNING_RATE
         )
     gnn.init(LOAD_PATH, LOG_PATH)
