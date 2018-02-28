@@ -28,10 +28,9 @@ parser.add_argument('--epoch', type=int, default=100,
         help='epoch number')
 parser.add_argument('--batch_size', type=int, default=5,
         help='batch size')
-parser.add_argument('--load_path', type=str, default=None,
+parser.add_argument('--load_path', type=str,
+        default='./saved_model/graphnn-model_best',
         help='path for model loading, "#LATEST#" for the latest checkpoint')
-parser.add_argument('--save_path', type=str,
-        default='./saved_model/graphnn-model', help='path for model saving')
 parser.add_argument('--log_path', type=str, default=None,
         help='path for training log')
 
@@ -56,7 +55,6 @@ if __name__ == '__main__':
     MAX_EPOCH = args.epoch
     BATCH_SIZE = args.batch_size
     LOAD_PATH = args.load_path
-    SAVE_PATH = args.save_path
     LOG_PATH = args.log_path
 
     SHOW_FREQ = 1
@@ -134,42 +132,10 @@ if __name__ == '__main__':
         )
     gnn.init(LOAD_PATH, LOG_PATH)
 
-    # Train
-    auc, fpr, tpr, thres = get_auc_epoch(gnn, Gs_train, classes_train,
-            BATCH_SIZE, load_data=valid_epoch)
-    gnn.say("Initial training auc = {0} @ {1}".format(auc, datetime.now()))
-    auc0, fpr, tpr, thres = get_auc_epoch(gnn, Gs_dev, classes_dev,
-            BATCH_SIZE, load_data=valid_epoch)
-    gnn.say("Initial validation auc = {0} @ {1}".format(auc0, datetime.now()))
-
-    best_auc = 0
-    for i in range(1, MAX_EPOCH+1):
-        l = train_epoch(gnn, Gs_train, classes_train, BATCH_SIZE)
-        gnn.say("EPOCH {3}/{0}, loss = {1} @ {2}".format(
-            MAX_EPOCH, l, datetime.now(), i))
-
-        if (i % TEST_FREQ == 0):
-            auc, fpr, tpr, thres = get_auc_epoch(gnn, Gs_train, classes_train,
-                    BATCH_SIZE, load_data=valid_epoch)
-            gnn.say("Testing model: training auc = {0} @ {1}".format(
-                auc, datetime.now()))
-            auc, fpr, tpr, thres = get_auc_epoch(gnn, Gs_dev, classes_dev,
-                    BATCH_SIZE, load_data=valid_epoch)
-            gnn.say("Testing model: validation auc = {0} @ {1}".format(
-                auc, datetime.now()))
-
-            if auc > best_auc:
-                path = gnn.save(SAVE_PATH+'_best')
-                best_auc = auc
-                gnn.say("Model saved in {}".format(path))
-
-        if (i % SAVE_FREQ == 0):
-            path = gnn.save(SAVE_PATH, i)
-            gnn.say("Model saved in {}".format(path))
-
     # Test
-    gnn.saver.restore(gnn.sess, SAVE_PATH+'_best')
-    print ("Model loaded from {}".format(SAVE_PATH+'_best'))
+    val_auc, fpr, tpr, thres = get_auc_epoch(
+            gnn, Gs_dev, classes_dev, BATCH_SIZE, load_data=valid_epoch)
+    gnn.say( "AUC on validation set: {}".format(val_auc) )
     test_auc, fpr, tpr, thres = get_auc_epoch(
             gnn, Gs_test, classes_test, BATCH_SIZE, load_data=test_epoch)
-    gnn.say( "Final auc on testing set: {}".format(test_auc) )
+    gnn.say( "AUC on testing set: {}".format(test_auc) )
