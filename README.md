@@ -13,8 +13,16 @@ pip install -r requirements.txt
 ```
 
 ## Model Implementation
-The model is implemented in `graphnnSiamese.py`. An example script to use the model is `exp.py`. Run the following code to execute the script:
+The model is implemented in `graphnnSiamese.py`.
+
+Run the following code to train the model:
 ```bash
-python exp.py
+python train.py
 ```
-or run `python exp.py -h` to check the optional arguments.
+or run `python train.py -h` to check the optional arguments.
+
+After training, run the following code to evaluate the model:
+```bash
+python eval.py
+```
+or run `python eval.py -h` to check the optional arguments.
