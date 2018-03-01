@@ -7,7 +7,7 @@ Unzip the data by running:
 unzip data.zip
 ```
 
-The network is based on Tensorflow 1.4 in Python 2.7. You can install the dependency by running:
+The network is written using Tensorflow 1.4 in Python 2.7. You can install the dependencies by running:
 ```bash
 pip install -r requirements.txt
 ```
