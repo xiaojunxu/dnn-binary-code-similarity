@@ -4,3 +4,4 @@ saved_model/*
 .*.swo
 *.pyc
 *.json
+data/*

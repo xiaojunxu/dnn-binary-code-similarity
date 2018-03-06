@@ -60,7 +60,7 @@ if __name__ == '__main__':
     SHOW_FREQ = 1
     TEST_FREQ = 1
     SAVE_FREQ = 5
-    DATA_FILE_NAME = './acfgSSL_{}/'.format(NODE_FEATURE_DIM)
+    DATA_FILE_NAME = './data/acfgSSL_{}/'.format(NODE_FEATURE_DIM)
     SOFTWARE=('openssl-1.0.1f-', 'openssl-1.0.1u-')
     OPTIMIZATION=('-O0', '-O1','-O2','-O3')
     COMPILER=('armeb-linux', 'i586-linux', 'mips-linux')
@@ -78,14 +78,14 @@ if __name__ == '__main__':
     print "{} graphs, {} functions".format(len(Gs), len(classes))
 
 
-    if os.path.isfile('class_perm.npy'):
-        perm = np.load('class_perm.npy')
+    if os.path.isfile('data/class_perm.npy'):
+        perm = np.load('data/class_perm.npy')
     else:
         perm = np.random.permutation(len(classes))
-        np.save('class_perm.npy', perm)
+        np.save('data/class_perm.npy', perm)
     if len(perm) < len(classes):
         perm = np.random.permutation(len(classes))
-        np.save('class_perm.npy', perm)
+        np.save('data/class_perm.npy', perm)
 
     Gs_train, classes_train, Gs_dev, classes_dev, Gs_test, classes_test =\
             partition_data(Gs,classes,[0.8,0.1,0.1],perm)
@@ -98,26 +98,26 @@ if __name__ == '__main__':
             len(Gs_test), len(classes_test))
 
     # Fix the pairs for validation and testing
-    if os.path.isfile('valid.json'):
-        with open('valid.json') as inf:
+    if os.path.isfile('data/valid.json'):
+        with open('data/valid.json') as inf:
             valid_ids = json.load(inf)
         valid_epoch = generate_epoch_pair(
                 Gs_dev, classes_dev, BATCH_SIZE, load_id=valid_ids)
     else:
         valid_epoch, valid_ids = generate_epoch_pair(
                 Gs_dev, classes_dev, BATCH_SIZE, output_id=True)
-        with open('valid.json', 'w') as outf:
+        with open('data/valid.json', 'w') as outf:
             json.dump(valid_ids, outf)
 
-    if os.path.isfile('test.json'):
-        with open('test.json') as inf:
+    if os.path.isfile('data/test.json'):
+        with open('data/test.json') as inf:
             test_ids = json.load(inf)
         test_epoch = generate_epoch_pair(
                 Gs_test, classes_test, BATCH_SIZE, load_id=test_ids)
     else:
         test_epoch, test_ids = generate_epoch_pair(
                 Gs_test, classes_test, BATCH_SIZE, output_id=True)
-        with open('test.json', 'w') as outf:
+        with open('data/test.json', 'w') as outf:
             json.dump(test_ids, outf)
 
     # Model
